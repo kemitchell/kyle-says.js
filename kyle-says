@@ -27,6 +27,10 @@ catch (error) {
   process.exit(1) }
 
 packageJSONData.license = 'MIT'
+// Delete the `contributors` array if there is one, so that npm will populate
+// the `contributors` property from `AUTHORS`, which is written below.
+// See https://github.com/npm/read-package-json/blob/336a212716bb830781d7e71580adaeda377b69d9/read-json.js#L173-L181
+delete packageJSONData.contributors
 
 fs.writeFileSync(
   packageJSONPath,
