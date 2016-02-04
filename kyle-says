@@ -1,0 +1,116 @@
+#!/usr/bin/env node
+var fs = require('fs')
+var mit = require('jslicense-mit')
+var normalize = require('normalize-package-data')
+var path = require('path')
+var peopleString = require('peoplestring-stringify')
+var wrap = require('word-wrap')
+
+// Update package.json
+
+var cwd = process.cwd()
+var packageJSONPath = path.join(cwd, 'package.json')
+
+try {
+  fs.accessSync(packageJSONPath, fs.E_READ) }
+catch (error) {
+  process.stderr.write('Cannot read ' + packageJSONPath + '\n')
+  process.exit(1) }
+
+var packageJSONText = fs.readFileSync(packageJSONPath).toString()
+
+var packageJSONData
+try {
+  packageJSONData = JSON.parse(packageJSONText) }
+catch (error) {
+  process.stderr.write('Cannot parse ' + packageJSONPath + '\n')
+  process.exit(1) }
+
+packageJSONData.license = 'MIT'
+
+fs.writeFileSync(
+  packageJSONPath,
+  ( JSON.stringify(packageJSONData, null, 2) + '\n' ))
+
+process.stdout.write('Set `license` to "MIT" in package.json\n')
+
+// Write LICENSE
+
+var normalizedPackageJSON = JSON.parse(JSON.stringify(packageJSONData))
+normalize(normalizedPackageJSON)
+
+var data = {
+  year: new Date().getFullYear().toString() }
+
+var hasAuthorName = (
+  normalizedPackageJSON.hasOwnProperty('author') &&
+  normalizedPackageJSON.author.hasOwnProperty('name') &&
+  normalizedPackageJSON.author.name.trim().length > 0 )
+
+if (!hasAuthorName) {
+  process.stderr.write('Could not find author name in package.json\n')
+  process.exit(1) }
+
+data.owners = (
+  normalizedPackageJSON.author.name.trim() +
+  ' and contributors listed in AUTHORS' )
+
+var hasContributors = (
+  normalizedPackageJSON.hasOwnProperty('contributors') &&
+  Array.isArray(normalizedPackageJSON.contributors) )
+
+var licensePath = path.join(cwd, 'LICENSE')
+
+fs.writeFileSync(
+  licensePath,
+  ( wrap(
+      mit
+        .map(function(paragraph) {
+          return paragraph
+            .reduce(
+              function(string, element) {
+                if (typeof element === 'string') {
+                  return ( string + element ) }
+                else {
+                  var field = element.field
+                  var hasField = data.hasOwnProperty(field)
+                  if (hasField) {
+                    return ( string + data[field] ) }
+                  else {
+                    throw new Error(
+                      'Missing package.json value for ' +
+                      '"' + field + '"') } } },
+              '') })
+        .join('\n'),
+      { width: 72, indent: '', trim: true }) +
+    '\n\n' +
+    'The SPDX identifier for these terms is "MIT"\n' ))
+
+process.stdout.write('Wrote an MIT license to LICENSE\n')
+
+// Write AUTHORS
+
+if (hasContributors) {
+  data.contributors = normalizedPackageJSON.contributors
+    .reduce(
+      function(array, element) {
+        if (element.hasOwnProperty('name')) {
+          return array.concat(element.name) }
+        else {
+          return array } },
+      [ ]) }
+else {
+  data.contributors = [ ] }
+
+var authorsPath = path.join(cwd, 'AUTHORS')
+
+fs.writeFileSync(
+  authorsPath,
+  ( [ normalizedPackageJSON.author ]
+      .concat(data.contributors)
+      .map(function(contributor) {
+        return peopleString(contributor) })
+      .join('\n') +
+    '\n' ))
+
+process.stdout.write('Wrote contributors list to AUTHORS\n')
