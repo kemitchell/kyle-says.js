@@ -1,6 +1,6 @@
 {
   "name": "kyle-says",
-  "description": "add recommeded packge licensing text and metadata",
+  "description": "add recommended package licensing text and metadata",
   "version": "1.2.0",
   "author": "Kyle E. Mitchell <kyle@kemitchell.com> (https://kemitchell.com/)",
   "bin": "kyle-says",
