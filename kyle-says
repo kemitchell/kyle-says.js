@@ -53,7 +53,7 @@ if (!hasAuthorName) {
 
 data.owners = (
   normalizedPackageJSON.author.name.trim() +
-  ' and contributors listed in AUTHORS' )
+  ' and contributors' )
 
 var hasContributors = (
   normalizedPackageJSON.hasOwnProperty('contributors') &&
