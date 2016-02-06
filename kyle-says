@@ -88,7 +88,7 @@ fs.writeFileSync(
         .join('\n'),
       { width: 72, indent: '', trim: true }) +
     '\n\n' +
-    'The SPDX identifier for these terms is "MIT"\n' ))
+    'The SPDX identifier for these terms is "MIT".\n' ))
 
 process.stdout.write('Wrote an MIT license to LICENSE\n')
 
